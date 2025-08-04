@@ -1,0 +1,5 @@
+{
+  "client_id": "mein-superpi",
+  "api_url": "http://aet-dashboard:7080/api/status",
+  "interval": 60
+}
