@@ -1,0 +1,7 @@
+services:
+  agent:
+    build: .
+    container_name: aet_agent
+    volumes:
+      - ./config:/app/config
+    restart: unless-stopped
