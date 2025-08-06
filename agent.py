@@ -1,5 +1,5 @@
 # === agent.py ===
-import json, time, socket, requests, subprocess, sys
+import json, time, socket, requests, subprocess, sys, platform
 from pathlib import Path
 from datetime import datetime
 
@@ -50,6 +50,7 @@ def handle_command(cmd):
         subprocess.run(["sudo", "reboot"])
     elif name == "update":
         subprocess.run(["sudo", "apt", "update"])
+        subprocess.run(["sudo", "apt", "upgrade", "-y"])
     elif name == "install_kits":
         return install_kits(args)
     else:
@@ -90,7 +91,8 @@ WantedBy=multi-user.target
 # === Infos erfassen ===
 def get_ip():
     try:
-        return socket.gethostbyname(socket.gethostname())
+        result = subprocess.run(["ip", "route", "get", "1.1.1.1"], capture_output=True, text=True)
+        return result.stdout.split("src")[-1].split()[0].strip()
     except:
         return "unknown"
 
@@ -108,10 +110,23 @@ def detect_modules():
         mods["kits"] = True
     return mods
 
+def get_update_status():
+    try:
+        result = subprocess.run(["apt", "list", "--upgradeable"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=10)
+        lines = result.stdout.splitlines()
+        count = len([l for l in lines if "/" in l and "Listing..." not in l])
+        return f"{count} Paket(e) können aktualisiert werden" if count else "System ist aktuell"
+    except Exception as e:
+        return f"Fehler: {e}"
+
 def get_sysinfo():
     return {
-        "time": datetime.now().isoformat(),
-        "python": f"{sys.version_info.major}.{sys.version_info.minor}"
+        "os": platform.platform(),
+        "kernel": platform.release(),
+        "python": f"{sys.version_info.major}.{sys.version_info.minor}",
+        "ip": get_ip(),
+        "update_status": get_update_status(),
+        "time": datetime.now().isoformat()
     }
 
 # === Hauptloop ===
