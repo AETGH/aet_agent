@@ -6,7 +6,7 @@ from datetime import datetime
 CONFIG_FILE = Path("config/config.json")
 COMMANDS_URL = None
 
-# === Konfiguration laden ===
+# === Konfiguration laden === 
 if not CONFIG_FILE.exists():
     raise FileNotFoundError("❌ config/config.json fehlt!")
 
